@@ -19,13 +19,17 @@ Grab the latest release from the [Releases page](https://github.com/sprtmed/Knox
 ## Features
 
 - **Menu bar app** — Click the icon or press `Cmd+Shift+P` to open. No dock icon, no window clutter
+- **Instant search** — Search field auto-focuses when you open Knox. Just start typing
 - **Password generator** — Configurable length, character sets, and strength meter
+- **Quick copy** — Copy a password straight from the vault list without opening the detail view
 - **Categories & favorites** — Organize your vault however you want
-- **Search** — Find any entry instantly
+- **Vault health** — Security score with detection of weak, reused, and duplicate passwords. Edit and fix items inline without leaving the health panel
+- **Trash** — Deleted items go to a 30-day trash. Restore mistakes or empty it manually
+- **Markdown notes** — Secure notes render markdown (bold, italic, code, links) with a raw/rich toggle
 - **Touch ID** — Unlock with your fingerprint
 - **Auto-lock** — Locks automatically after inactivity, sleep, or screen lock
 - **Import** — Bring your passwords from 1Password, Bitwarden, or any CSV
-- **Export** — Encrypted `.knox` backup or plain CSV
+- **Export** — Encrypted `.knox` backup or plain CSV. Backup reminder if you haven't exported in 30+ days
 - **Dark & light mode** — Follows your preference
 - **Vault overwrite protection** — Automatic backups on every save, Keychain recovery, and "Start Fresh" safety net
 - **Completely free** — No trials, no tiers, no subscriptions. Ever.
@@ -41,6 +45,7 @@ This is a password manager, so security isn't a feature — it's the foundation.
 | **Encryption** | AES-256-GCM (CryptoKit) |
 | **Key derivation** | Argon2id — 128 MB memory, 3 iterations, 4 parallel lanes |
 | **Secret Key** | 128-bit random key stored in macOS Keychain, mixed via HKDF-SHA256 |
+| **Secure Enclave** | On Apple Silicon, the Secret Key is wrapped by a hardware-bound P-256 key in the Secure Enclave. Even root cannot extract it. Falls back to Keychain on Intel |
 | **Key memory** | Pinned to RAM (`mlock`), zeroed on lock (`resetBytes`) |
 | **Anti-debug** | `ptrace(PT_DENY_ATTACH)` + `sysctl` detection in release builds |
 | **File permissions** | `0600` (owner read/write only) on all vault files |
@@ -50,7 +55,7 @@ This is a password manager, so security isn't a feature — it's the foundation.
 | **Password requirements** | 12-character minimum with real-time strength scoring |
 | **Storage** | Local only — `~/Library/Application Support/Knox/` |
 | **Vault backup** | Rolling backup (`vault.enc.bak`) created automatically on every save |
-| **Network** | None. Zero. KNOX has no network entitlements and makes no connections. |
+| **Network** | Outbound only — a single GitHub API call to check for updates. No telemetry, no analytics, no cloud sync |
 | **Biometrics** | Touch ID via `LAContext` with `.biometryCurrentSet` (invalidates on enrollment change) |
 | **Runtime** | Hardened Runtime enabled |
 
