@@ -19,6 +19,7 @@ struct VaultItem: Codable, Identifiable {
     var url: String?
     var username: String?
     var password: String?
+    var totpSecret: String?
 
     // Card fields
     var cardType: String?
@@ -63,11 +64,12 @@ struct VaultItem: Codable, Identifiable {
 }
 
 extension VaultItem {
-    static func newLogin(name: String, url: String, username: String, password: String, category: String) -> VaultItem {
+    static func newLogin(name: String, url: String, username: String, password: String, category: String, totpSecret: String? = nil) -> VaultItem {
         VaultItem(
             id: UUID(), type: .login, name: name, category: category,
             isFavorite: false, createdAt: Date(), modifiedAt: Date(),
-            url: url, username: username, password: password
+            url: url, username: username, password: password,
+            totpSecret: totpSecret
         )
     }
 

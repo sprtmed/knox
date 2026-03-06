@@ -312,6 +312,8 @@ struct ItemDetailView: View {
             }
             .buttonStyle(.plain)
         }
+        FormLabel("2FA SECRET (OPTIONAL)")
+        FormTextField(placeholder: "Paste base32 key or otpauth:// URI", text: $vault.editTotpSecret)
     }
 
     // MARK: - Card Edit Fields
@@ -506,6 +508,10 @@ struct ItemDetailView: View {
             .padding(12)
             .background(theme.fieldBg)
             .cornerRadius(8)
+
+        if let totp = item.totpSecret, !totp.isEmpty {
+            TOTPDisplayRow(secret: totp)
+        }
 
             // Strength bar
             let strength = PasswordStrength.calculate(password)
@@ -833,6 +839,98 @@ private struct SelectableTextRepresentable: NSViewRepresentable {
         if let storage = textView.textStorage {
             let range = NSRange(location: 0, length: storage.length)
             storage.addAttribute(.paragraphStyle, value: style, range: range)
+        }
+    }
+}
+
+// MARK: - TOTP Display Row
+
+struct TOTPDisplayRow: View {
+    let secret: String
+    @Environment(\.theme) var theme
+    @EnvironmentObject var vault: VaultViewModel
+    @State private var code: String = "------"
+    @State private var remaining: Int = 30
+    @State private var timer: Timer?
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("2FA CODE")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(theme.textFaint)
+                    .tracking(1)
+                HStack(spacing: 8) {
+                    Text(formatCode(code))
+                        .font(.system(size: 18, weight: .semibold, design: .monospaced))
+                        .foregroundColor(theme.accentBlueLt)
+                    HStack(spacing: 3) {
+                        TOTPCountdownArc(remaining: remaining, period: 30)
+                            .frame(width: 16, height: 16)
+                        Text("\(remaining)s")
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .foregroundColor(remaining <= 5 ? theme.accentRed : theme.textSecondary)
+                    }
+                }
+            }
+            Spacer()
+            IconButton(
+                icon: vault.copiedField == "totp" ? "checkmark" : "doc.on.doc",
+                isActive: vault.copiedField == "totp",
+                action: { vault.copyToClipboard(code, fieldName: "totp") }
+            )
+        }
+        .padding(12)
+        .background(theme.fieldBg)
+        .cornerRadius(8)
+        .onAppear { startTimer() }
+        .onDisappear { stopTimer() }
+    }
+
+    private func formatCode(_ code: String) -> String {
+        guard code.count == 6 else { return code }
+        return String(code.prefix(3)) + " " + String(code.suffix(3))
+    }
+
+    private func refreshCode() {
+        if let result = TOTPService.generate(secret: secret) {
+            code = result.code
+            remaining = result.remaining
+        }
+    }
+
+    private func startTimer() {
+        refreshCode()
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            refreshCode()
+        }
+    }
+
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+}
+
+// MARK: - TOTP Countdown Arc
+
+struct TOTPCountdownArc: View {
+    let remaining: Int
+    let period: Int
+    @Environment(\.theme) var theme
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(theme.fieldBg, lineWidth: 2)
+            Circle()
+                .trim(from: 0, to: CGFloat(remaining) / CGFloat(period))
+                .stroke(
+                    remaining <= 5 ? theme.accentRed : theme.accentBlue,
+                    style: StrokeStyle(lineWidth: 2, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+                .animation(.linear(duration: 1), value: remaining)
         }
     }
 }

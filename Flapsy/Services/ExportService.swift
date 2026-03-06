@@ -105,7 +105,7 @@ final class ExportService {
     func exportCSV(items: [VaultItem], to url: URL) throws {
         guard !items.isEmpty else { throw ExportError.noItems }
 
-        var csv = "type,name,url,username,password,cardholder,card_number,expiry,cvv,notes,category,favorite,created,modified\n"
+        var csv = "type,name,url,username,password,totp_secret,cardholder,card_number,expiry,cvv,notes,category,favorite,created,modified\n"
 
         for item in items {
             let row = [
@@ -114,6 +114,7 @@ final class ExportService {
                 escapeCSVField(item.url ?? ""),
                 escapeCSVField(item.username ?? ""),
                 escapeCSVField(item.password ?? ""),
+                escapeCSVField(item.totpSecret ?? ""),
                 escapeCSVField(item.cardHolder ?? ""),
                 escapeCSVField(item.cardNumber ?? ""),
                 escapeCSVField(item.expiry ?? ""),

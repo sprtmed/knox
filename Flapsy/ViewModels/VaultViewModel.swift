@@ -118,6 +118,7 @@ final class VaultViewModel: ObservableObject {
     @Published var newCvv: String = ""
     @Published var newCardNotes: String = ""
     @Published var newNoteText: String = ""
+    @Published var newTotpSecret: String = ""
 
     // MARK: - Edit Item
     @Published var isEditingItem: Bool = false
@@ -133,6 +134,7 @@ final class VaultViewModel: ObservableObject {
     @Published var editCvv: String = ""
     @Published var editCardNotes: String = ""
     @Published var editNoteText: String = ""
+    @Published var editTotpSecret: String = ""
     @Published var showEditPassword: Bool = false
 
     // MARK: - Category Manager
@@ -698,6 +700,7 @@ final class VaultViewModel: ObservableObject {
         newCvv = ""
         newCardNotes = ""
         newNoteText = ""
+        newTotpSecret = ""
 
         // Clear sensitive edit fields
         editPassword = ""
@@ -705,6 +708,7 @@ final class VaultViewModel: ObservableObject {
         editCvv = ""
         editCardNotes = ""
         editNoteText = ""
+        editTotpSecret = ""
         isEditingItem = false
 
         // Clear sensitive export/change-password fields
@@ -785,7 +789,8 @@ final class VaultViewModel: ObservableObject {
         let item: VaultItem
         switch newType {
         case .login:
-            item = .newLogin(name: newName, url: newUrl, username: newUsername, password: newPassword, category: newCategory)
+            let totp = TOTPService.extractSecret(from: newTotpSecret)
+            item = .newLogin(name: newName, url: newUrl, username: newUsername, password: newPassword, category: newCategory, totpSecret: totp)
         case .card:
             item = .newCard(name: newName, cardType: newCardType, cardHolder: newCardHolder, cardNumber: newCardNumber, expiry: newExpiry, cvv: newCvv, cardNotes: newCardNotes, category: newCategory)
         case .note:
@@ -817,6 +822,7 @@ final class VaultViewModel: ObservableObject {
         newCvv = ""
         newCardNotes = ""
         newNoteText = ""
+        newTotpSecret = ""
     }
 
     func navigateToPanel(_ panel: VaultPanel) {
@@ -913,6 +919,7 @@ final class VaultViewModel: ObservableObject {
         editCvv = item.cvv ?? ""
         editCardNotes = item.cardNotes ?? ""
         editNoteText = item.noteText ?? ""
+        editTotpSecret = item.totpSecret ?? ""
         showEditPassword = false
         isEditingItem = true
     }
@@ -930,6 +937,7 @@ final class VaultViewModel: ObservableObject {
             items[idx].url = editUrl
             items[idx].username = editUsername
             items[idx].password = editPassword
+            items[idx].totpSecret = TOTPService.extractSecret(from: editTotpSecret)
         case .card:
             items[idx].cardType = editCardType.isEmpty ? nil : editCardType
             items[idx].cardHolder = editCardHolder

@@ -200,6 +200,11 @@ struct AddItemView: View {
                 .buttonStyle(.plain)
             }
 
+        VStack(alignment: .leading, spacing: 5) {
+            FormLabel("2FA SECRET (OPTIONAL)")
+            FormTextField(placeholder: "Paste base32 key or otpauth:// URI", text: $vault.newTotpSecret)
+        }
+
             // Strength bar
             if !vault.newPassword.isEmpty {
                 let strength = vault.newPasswordStrength
