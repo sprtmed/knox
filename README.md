@@ -19,21 +19,33 @@ Grab the latest release from the [Releases page](https://github.com/sprtmed/Knox
 ## Features
 
 - **Menu bar app** — Click the icon or press `Cmd+Shift+P` to open. No dock icon, no window clutter
-- **Instant search** — Search field auto-focuses when you open Knox. Just start typing
-- **Password generator** — Configurable length, character sets, and strength meter
+- **Logins, cards & notes** — Store passwords, credit/debit cards (Visa, Mastercard, Amex, Discover, UnionPay), and secure notes — all encrypted in one vault
+- **TOTP / 2FA** — Add a TOTP secret or `otpauth://` URI to any login and Knox generates live 6-digit codes with a countdown timer. No separate authenticator app needed
+- **Fuzzy search** — Search field auto-focuses on open (`Cmd+K` shortcut). Fuzzy matching with score-ranked results and character highlighting
+- **Password generator** — Three modes: random (length 12–50, numbers/symbols toggles), memorable passphrase (EFF wordlist, 2–8 words, custom separator), and PIN (4–12 digits). Real-time strength meter on all modes
 - **Quick copy** — Copy a password straight from the vault list without opening the detail view
-- **Categories & favorites** — Organize your vault however you want
+- **Open URL + copy password** — One click to launch the site in your browser and copy the password to your clipboard
+- **Categories & favorites** — Organize your vault with custom color-coded categories and a favorites filter
 - **Vault health** — Security score with detection of weak, reused, and duplicate passwords. Edit and fix items inline without leaving the health panel
+- **Breach detection** — Checks your passwords against Have I Been Pwned using k-anonymity (only a 5-character SHA-1 prefix leaves your machine — your passwords never do)
 - **Trash** — Deleted items go to a 30-day trash. Restore mistakes or empty it manually
 - **Markdown notes** — Secure notes render markdown (bold, italic, code, links) with a raw/rich toggle
 - **Touch ID** — Unlock with your fingerprint
-- **Auto-lock** — Locks automatically after inactivity, sleep, or screen lock
-- **Import** — Bring your passwords from 1Password, Bitwarden, or any CSV
+- **Auto-lock** — Locks automatically after inactivity, sleep, or screen lock. Configurable timer (1–30 minutes)
+- **Clipboard auto-clear** — Copied passwords are marked as concealed and automatically cleared after a configurable timer (5–120 seconds)
+- **Import** — Bring your passwords from 1Password, Bitwarden, Chrome, or any generic CSV. Knox encrypted backups (`.knox`) too
 - **Export** — Encrypted `.knox` backup or plain CSV. Backup reminder if you haven't exported in 30+ days
 - **Dark & light mode** — Follows your preference
+- **Menu bar icon picker** — Choose your preferred icon style from the settings
+- **Window pinning** — Pin the Knox popover so it stays open when you click elsewhere
 - **Password history** — Tracks the last 20 passwords for each login item with timestamps, so you can roll back if needed
 - **Edit re-authentication** — Requires master password or Touch ID before editing login credentials, preventing unauthorized changes
 - **Vault overwrite protection** — Automatic backups on every save, Keychain recovery, and "Start Fresh" safety net
+- **Secret Key & Emergency Kit** — A 128-bit secret key is generated alongside your master password. Knox displays it as a formatted base32 "Emergency Kit" after vault creation so you can store it safely
+- **Secret Key recovery** — If your Keychain is lost or you move to a new Mac, enter your base32 secret key on the lock screen to regain access
+- **Secure Enclave** — On Apple Silicon, your secret key is wrapped by a hardware-bound key inside the Secure Enclave. Even root cannot extract it. Falls back to Keychain on Intel Macs
+- **Guided onboarding** — A step-by-step first-launch wizard walks you through creating a master password, setting up Touch ID, and importing existing data
+- **Update checker** — Optionally checks GitHub releases on launch and shows a badge when a new version is available
 - **Completely free** — No trials, no tiers, no subscriptions. Ever.
 
 ---
