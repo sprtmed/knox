@@ -4,7 +4,6 @@ struct AddItemView: View {
     @EnvironmentObject var vault: VaultViewModel
     @EnvironmentObject var settings: SettingsViewModel
     @Environment(\.theme) var theme
-    @State private var expandedNoteAutoOpened = false
 
     var body: some View {
         if vault.showExpandedNote {
@@ -256,8 +255,8 @@ struct AddItemView: View {
                 )
         }
         .onAppear {
-            if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
-                expandedNoteAutoOpened = true
+            if settings.alwaysExpandNotes && !vault.expandedNoteAutoOpened {
+                vault.expandedNoteAutoOpened = true
                 vault.showExpandedNote = true
             }
         }
@@ -377,8 +376,8 @@ struct AddItemView: View {
                 )
         }
         .onAppear {
-            if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
-                expandedNoteAutoOpened = true
+            if settings.alwaysExpandNotes && !vault.expandedNoteAutoOpened {
+                vault.expandedNoteAutoOpened = true
                 vault.showExpandedNote = true
             }
         }
@@ -412,8 +411,8 @@ struct AddItemView: View {
                 )
         }
         .onAppear {
-            if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
-                expandedNoteAutoOpened = true
+            if settings.alwaysExpandNotes && !vault.expandedNoteAutoOpened {
+                vault.expandedNoteAutoOpened = true
                 vault.showExpandedNote = true
             }
         }

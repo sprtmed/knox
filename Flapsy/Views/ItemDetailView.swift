@@ -6,7 +6,6 @@ struct ItemDetailView: View {
     @Environment(\.theme) var theme
     @State private var showDeleteConfirmation = false
     @State private var showMarkdownPreview = true
-    @State private var expandedNoteAutoOpened = false
 
     private func dismissDetail() {
         withAnimation(.easeInOut(duration: 0.15)) {
@@ -32,11 +31,25 @@ struct ItemDetailView: View {
             .onChange(of: vault.isEditingItem) { editing in
                 if !editing {
                     vault.showExpandedNote = false
-                    expandedNoteAutoOpened = false
+                    vault.expandedNoteAutoOpened = false
                 }
             }
-            .onChange(of: vault.selectedItemID) { _ in
+            .onChange(of: vault.selectedItemID) { newID in
                 vault.showExpandedNote = false
+                vault.expandedNoteAutoOpened = false
+                // Auto-expand if setting is ON and item has notes
+                if settings.alwaysExpandNotes, let id = newID, let item = vault.items.first(where: { $0.id == id }) {
+                    let hasNotes: Bool = {
+                        switch item.type {
+                        case .login: return !(item.loginNotes ?? "").isEmpty
+                        case .card: return !(item.cardNotes ?? "").isEmpty
+                        case .note: return !(item.noteText ?? "").isEmpty
+                        }
+                    }()
+                    if hasNotes {
+                        vault.showExpandedNote = true
+                    }
+                }
             }
     }
 
@@ -57,6 +70,9 @@ struct ItemDetailView: View {
                 withAnimation(.easeInOut(duration: 0.15)) {
                     vault.showExpandedNote = false
                 }
+            },
+            onEdit: {
+                vault.requestEditWithReauth(item)
             }
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -192,6 +208,16 @@ struct ItemDetailView: View {
                     withAnimation(.easeInOut(duration: 0.15)) {
                         vault.showExpandedNote = false
                     }
+                },
+                onSave: {
+                    vault.saveEditedItem()
+                },
+                onCancel: {
+                    vault.cancelEditing()
+                },
+                onDelete: {
+                    vault.deleteItem(item.id)
+                    vault.isEditingItem = false
                 }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -400,8 +426,8 @@ struct ItemDetailView: View {
                 )
         }
         .onAppear {
-            if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
-                expandedNoteAutoOpened = true
+            if settings.alwaysExpandNotes && !vault.expandedNoteAutoOpened {
+                vault.expandedNoteAutoOpened = true
                 vault.showExpandedNote = true
             }
         }
@@ -475,8 +501,8 @@ struct ItemDetailView: View {
                 )
         }
         .onAppear {
-            if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
-                expandedNoteAutoOpened = true
+            if settings.alwaysExpandNotes && !vault.expandedNoteAutoOpened {
+                vault.expandedNoteAutoOpened = true
                 vault.showExpandedNote = true
             }
         }
@@ -508,8 +534,8 @@ struct ItemDetailView: View {
                     .stroke(theme.inputBorder, lineWidth: 1)
             )
             .onAppear {
-                if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
-                    expandedNoteAutoOpened = true
+                if settings.alwaysExpandNotes && !vault.expandedNoteAutoOpened {
+                    vault.expandedNoteAutoOpened = true
                     vault.showExpandedNote = true
                 }
             }

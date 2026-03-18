@@ -123,6 +123,7 @@ final class VaultViewModel: ObservableObject {
 
     // MARK: - Expanded Note
     @Published var showExpandedNote: Bool = false
+    var expandedNoteAutoOpened: Bool = false
 
     // MARK: - Edit Item
     @Published var isEditingItem: Bool = false
