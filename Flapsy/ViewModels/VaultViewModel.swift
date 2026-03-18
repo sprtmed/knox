@@ -121,6 +121,9 @@ final class VaultViewModel: ObservableObject {
     @Published var newTotpSecret: String = ""
     @Published var newLoginNotes: String = ""
 
+    // MARK: - Expanded Note
+    @Published var showExpandedNote: Bool = false
+
     // MARK: - Edit Item
     @Published var isEditingItem: Bool = false
     @Published var editName: String = ""

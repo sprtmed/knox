@@ -47,8 +47,10 @@ struct VaultContainerView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                // Top bar
-                topBar
+                // Top bar (hidden when expanded note is active)
+                if !vault.showExpandedNote {
+                    topBar
+                }
                 // Panel content
                 panelContent
             }
@@ -69,6 +71,9 @@ struct VaultContainerView: View {
 
         }
         .ignoresSafeArea(.container, edges: .top)
+        .onChange(of: vault.currentPanel) { _ in
+            vault.showExpandedNote = false
+        }
     }
 
     private func overlaySheet<Content: View>(@ViewBuilder content: () -> Content) -> some View {

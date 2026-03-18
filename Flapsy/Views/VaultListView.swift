@@ -10,18 +10,23 @@ struct VaultListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            searchBar
-            typeFilterRow
-            categoryFilterRow
-            itemList
-
-            if vault.selectedItem != nil {
+            if vault.showExpandedNote {
+                // Expanded note takes over the full space
                 ItemDetailView()
+            } else {
+                searchBar
+                typeFilterRow
+                categoryFilterRow
+                itemList
+
+                if vault.selectedItem != nil {
+                    ItemDetailView()
+                }
+
+                Spacer(minLength: 0)
+
+                footer
             }
-
-            Spacer(minLength: 0)
-
-            footer
 
             // Hidden Cmd+K handler
             Button("") { vault.isSearchFocused = true }

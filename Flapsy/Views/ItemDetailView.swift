@@ -6,7 +6,6 @@ struct ItemDetailView: View {
     @Environment(\.theme) var theme
     @State private var showDeleteConfirmation = false
     @State private var showMarkdownPreview = true
-    @State private var showExpandedNote = false
     @State private var expandedNoteAutoOpened = false
 
     private func dismissDetail() {
@@ -23,7 +22,7 @@ struct ItemDetailView: View {
         if let item = vault.selectedItem {
             if vault.isEditingItem {
                 editView(item)
-            } else if showExpandedNote {
+            } else if vault.showExpandedNote {
                 readOnlyExpandedNote(item)
             } else {
                 detailView(item)
@@ -32,12 +31,12 @@ struct ItemDetailView: View {
         EmptyView()
             .onChange(of: vault.isEditingItem) { editing in
                 if !editing {
-                    showExpandedNote = false
+                    vault.showExpandedNote = false
                     expandedNoteAutoOpened = false
                 }
             }
             .onChange(of: vault.selectedItemID) { _ in
-                showExpandedNote = false
+                vault.showExpandedNote = false
             }
     }
 
@@ -56,7 +55,7 @@ struct ItemDetailView: View {
             readOnly: true,
             onDismiss: {
                 withAnimation(.easeInOut(duration: 0.15)) {
-                    showExpandedNote = false
+                    vault.showExpandedNote = false
                 }
             }
         )
@@ -185,13 +184,13 @@ struct ItemDetailView: View {
 
     @ViewBuilder
     private func editView(_ item: VaultItem) -> some View {
-        if showExpandedNote {
+        if vault.showExpandedNote {
             ExpandedNoteView(
                 text: expandedNoteBinding(for: item),
                 title: item.type == .note ? "SECURE NOTE" : "NOTES",
                 onDismiss: {
                     withAnimation(.easeInOut(duration: 0.15)) {
-                        showExpandedNote = false
+                        vault.showExpandedNote = false
                     }
                 }
             )
@@ -383,7 +382,7 @@ struct ItemDetailView: View {
                 Spacer()
                 NoteExpandButton {
                     withAnimation(.easeInOut(duration: 0.15)) {
-                        showExpandedNote = true
+                        vault.showExpandedNote = true
                     }
                 }
             }
@@ -403,7 +402,7 @@ struct ItemDetailView: View {
         .onAppear {
             if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
                 expandedNoteAutoOpened = true
-                showExpandedNote = true
+                vault.showExpandedNote = true
             }
         }
     }
@@ -458,7 +457,7 @@ struct ItemDetailView: View {
                 Spacer()
                 NoteExpandButton {
                     withAnimation(.easeInOut(duration: 0.15)) {
-                        showExpandedNote = true
+                        vault.showExpandedNote = true
                     }
                 }
             }
@@ -478,7 +477,7 @@ struct ItemDetailView: View {
         .onAppear {
             if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
                 expandedNoteAutoOpened = true
-                showExpandedNote = true
+                vault.showExpandedNote = true
             }
         }
     }
@@ -492,7 +491,7 @@ struct ItemDetailView: View {
             Spacer()
             NoteExpandButton {
                 withAnimation(.easeInOut(duration: 0.15)) {
-                    showExpandedNote = true
+                    vault.showExpandedNote = true
                 }
             }
         }
@@ -511,7 +510,7 @@ struct ItemDetailView: View {
             .onAppear {
                 if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
                     expandedNoteAutoOpened = true
-                    showExpandedNote = true
+                    vault.showExpandedNote = true
                 }
             }
     }
@@ -673,7 +672,7 @@ struct ItemDetailView: View {
                     Spacer()
                     NoteExpandButton {
                         withAnimation(.easeInOut(duration: 0.15)) {
-                            showExpandedNote = true
+                            vault.showExpandedNote = true
                         }
                     }
                 }
@@ -796,7 +795,7 @@ struct ItemDetailView: View {
                     Spacer()
                     NoteExpandButton {
                         withAnimation(.easeInOut(duration: 0.15)) {
-                            showExpandedNote = true
+                            vault.showExpandedNote = true
                         }
                     }
                 }
@@ -825,7 +824,7 @@ struct ItemDetailView: View {
                 Spacer()
                 NoteExpandButton {
                     withAnimation(.easeInOut(duration: 0.15)) {
-                        showExpandedNote = true
+                        vault.showExpandedNote = true
                     }
                 }
                 Button(action: { showMarkdownPreview.toggle() }) {

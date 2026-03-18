@@ -15,6 +15,9 @@ struct VaultHealthView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if vault.showExpandedNote {
+                ItemDetailView()
+            } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     healthScoreCard
@@ -75,6 +78,7 @@ struct VaultHealthView: View {
             }
 
             Spacer(minLength: 0)
+            } // else (not expanded)
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }

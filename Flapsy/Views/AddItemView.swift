@@ -4,11 +4,10 @@ struct AddItemView: View {
     @EnvironmentObject var vault: VaultViewModel
     @EnvironmentObject var settings: SettingsViewModel
     @Environment(\.theme) var theme
-    @State private var showExpandedNote = false
     @State private var expandedNoteAutoOpened = false
 
     var body: some View {
-        if showExpandedNote {
+        if vault.showExpandedNote {
             expandedNoteSubpage
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
@@ -30,7 +29,7 @@ struct AddItemView: View {
             title: vault.newType == .note ? "SECURE NOTE" : "NOTES",
             onDismiss: {
                 withAnimation(.easeInOut(duration: 0.15)) {
-                    showExpandedNote = false
+                    vault.showExpandedNote = false
                 }
             }
         )
@@ -239,7 +238,7 @@ struct AddItemView: View {
                 Spacer()
                 NoteExpandButton {
                     withAnimation(.easeInOut(duration: 0.15)) {
-                        showExpandedNote = true
+                        vault.showExpandedNote = true
                     }
                 }
             }
@@ -259,7 +258,7 @@ struct AddItemView: View {
         .onAppear {
             if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
                 expandedNoteAutoOpened = true
-                showExpandedNote = true
+                vault.showExpandedNote = true
             }
         }
 
@@ -360,7 +359,7 @@ struct AddItemView: View {
                 Spacer()
                 NoteExpandButton {
                     withAnimation(.easeInOut(duration: 0.15)) {
-                        showExpandedNote = true
+                        vault.showExpandedNote = true
                     }
                 }
             }
@@ -380,7 +379,7 @@ struct AddItemView: View {
         .onAppear {
             if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
                 expandedNoteAutoOpened = true
-                showExpandedNote = true
+                vault.showExpandedNote = true
             }
         }
     }
@@ -395,7 +394,7 @@ struct AddItemView: View {
                 Spacer()
                 NoteExpandButton {
                     withAnimation(.easeInOut(duration: 0.15)) {
-                        showExpandedNote = true
+                        vault.showExpandedNote = true
                     }
                 }
             }
@@ -415,7 +414,7 @@ struct AddItemView: View {
         .onAppear {
             if settings.alwaysExpandNotes && !expandedNoteAutoOpened {
                 expandedNoteAutoOpened = true
-                showExpandedNote = true
+                vault.showExpandedNote = true
             }
         }
     }
