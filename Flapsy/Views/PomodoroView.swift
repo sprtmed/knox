@@ -28,6 +28,7 @@ class PomodoroTimer: ObservableObject {
     @Published var showCelebration: Bool = false
     @Published var celebrationBlockIndex: Int? = nil
     @Published var celebrationText: String = ""
+    @Published var pendingBlockIndex: Int? = nil
 
     private let celebrations = [
         "Nice!", "Great job!", "Keep going!",
@@ -168,11 +169,17 @@ class PomodoroTimer: ObservableObject {
     private func blockCompleted() {
         timer?.invalidate()
         blockState = .idle
-        celebrationBlockIndex = completedBlocks
+        pendingBlockIndex = completedBlocks
+        blockTimeRemaining = blockDuration * 60
+    }
+
+    func claimBlock() {
+        guard let index = pendingBlockIndex else { return }
+        celebrationBlockIndex = index
         completedBlocks = min(completedBlocks + 1, blockGoal)
         celebrationText = celebrations.randomElement() ?? "Nice!"
+        pendingBlockIndex = nil
         showCelebration = true
-        blockTimeRemaining = blockDuration * 60
     }
 
     func dismissCelebration() {
@@ -206,6 +213,7 @@ class PomodoroTimer: ObservableObject {
         blockTimeRemaining = blockDuration * 60
         showCelebration = false
         celebrationBlockIndex = nil
+        pendingBlockIndex = nil
     }
 
     // MARK: Shared
@@ -370,7 +378,11 @@ private struct BlockTimerView: View {
     private let gridColumns = 5
 
     var body: some View {
-        ZStack {
+        if timer.showCelebration {
+            celebrationOverlay
+                .transition(.scale.combined(with: .opacity))
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: timer.showCelebration)
+        } else {
             VStack(spacing: 16) {
                 // Heading
                 VStack(spacing: 4) {
@@ -390,6 +402,14 @@ private struct BlockTimerView: View {
                 // Grid
                 blockGrid
 
+                // Pending prompt
+                if timer.pendingBlockIndex != nil {
+                    Text("Tap the glowing block to claim it!")
+                        .font(.system(size: 12, weight: .medium, design: .monospaced))
+                        .foregroundColor(theme.accentGreen)
+                        .padding(.vertical, 4)
+                }
+
                 // Countdown when active
                 if timer.blockState == .running || timer.blockState == .paused {
                     VStack(spacing: 4) {
@@ -406,12 +426,14 @@ private struct BlockTimerView: View {
                 }
 
                 // Goal selectors (idle only)
-                if timer.blockState == .idle && !timer.showCelebration {
+                if timer.blockState == .idle && timer.pendingBlockIndex == nil {
                     goalSelectors
                 }
 
-                // Action button
-                actionButton
+                // Action button (hide when pending)
+                if timer.pendingBlockIndex == nil {
+                    actionButton
+                }
 
                 // Footer
                 Text(footerText)
@@ -420,14 +442,8 @@ private struct BlockTimerView: View {
                     .padding(.top, 4)
                     .padding(.bottom, 8)
             }
-
-            // Celebration overlay
-            if timer.showCelebration {
-                celebrationOverlay
-                    .transition(.scale.combined(with: .opacity))
-            }
+            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: timer.showCelebration)
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: timer.showCelebration)
     }
 
     // MARK: Grid
@@ -447,21 +463,27 @@ private struct BlockTimerView: View {
     private func blockCell(index: Int) -> some View {
         let isCompleted = index < timer.completedBlocks
         let isCurrent = index == timer.completedBlocks && timer.blockState != .idle
-        let isNext = index == timer.completedBlocks && timer.blockState == .idle && !timer.showCelebration
+        let isPending = timer.pendingBlockIndex == index
+        let isNext = index == timer.completedBlocks && timer.blockState == .idle && timer.pendingBlockIndex == nil && !timer.showCelebration
         let isCelebrating = timer.celebrationBlockIndex == index && timer.showCelebration
 
         return RoundedRectangle(cornerRadius: 6)
-            .fill(isCompleted || isCelebrating ? theme.accentBlue.opacity(0.2) : theme.fieldBg)
+            .fill(
+                isPending ? theme.accentGreen.opacity(0.25) :
+                isCompleted || isCelebrating ? theme.accentBlue.opacity(0.2) :
+                theme.fieldBg
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 6)
                     .stroke(
+                        isPending ? theme.accentGreen :
                         isNext ? theme.accentBlue.opacity(0.5) :
                             isCurrent ? theme.accentBlue :
                             isCompleted || isCelebrating ? theme.accentBlue.opacity(0.3) :
                             theme.cardBorder,
                         style: isNext
                             ? StrokeStyle(lineWidth: 1.5, dash: [4, 3])
-                            : StrokeStyle(lineWidth: 1)
+                            : StrokeStyle(lineWidth: isPending ? 2 : 1)
                     )
             )
             .overlay(
@@ -470,6 +492,12 @@ private struct BlockTimerView: View {
                         Image(systemName: "checkmark")
                             .font(.system(size: 12, weight: .bold))
                             .foregroundColor(theme.accentBlue)
+                    }
+                    if isPending {
+                        Image(systemName: "hand.tap.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(theme.accentGreen)
+                            .modifier(PulseModifier())
                     }
                     if isCurrent {
                         Circle()
@@ -482,6 +510,11 @@ private struct BlockTimerView: View {
             .aspectRatio(1, contentMode: .fit)
             .scaleEffect(isCelebrating ? 1.1 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.5), value: isCelebrating)
+            .onTapGesture {
+                if isPending {
+                    timer.claimBlock()
+                }
+            }
     }
 
     // MARK: Goal Selectors
@@ -615,43 +648,84 @@ private struct BlockTimerView: View {
     // MARK: Celebration
 
     private var celebrationOverlay: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
-                .foregroundColor(theme.accentGreen)
+        ZStack {
+            // Full-screen background
+            theme.dropBg
+                .ignoresSafeArea()
 
-            Text(timer.celebrationText)
-                .font(.system(size: 20, weight: .bold, design: .monospaced))
-                .foregroundColor(theme.text)
-
-            Text("Block \(timer.completedBlocks) complete")
-                .font(.system(size: 12, design: .monospaced))
-                .foregroundColor(theme.textSecondary)
-
-            Button(action: { timer.dismissCelebration() }) {
-                Text("Continue")
-                    .font(.system(size: 13, weight: .medium, design: .monospaced))
-                    .foregroundColor(theme.accentBlue)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(theme.accentBlue.opacity(0.1))
-                    .cornerRadius(8)
+            // Animated color rings
+            ForEach(0..<3, id: \.self) { i in
+                Circle()
+                    .stroke(
+                        [theme.accentGreen, theme.accentBlue, theme.accentPurple][i].opacity(0.15),
+                        lineWidth: 40
+                    )
+                    .frame(width: CGFloat(120 + i * 100), height: CGFloat(120 + i * 100))
+                    .scaleEffect(timer.showCelebration ? 1.0 : 0.3)
+                    .opacity(timer.showCelebration ? 1.0 : 0)
+                    .animation(
+                        .spring(response: 0.6, dampingFraction: 0.6)
+                            .delay(Double(i) * 0.1),
+                        value: timer.showCelebration
+                    )
             }
-            .buttonStyle(.plain)
-            .padding(.top, 4)
+
+            VStack(spacing: 16) {
+                Spacer()
+
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 64))
+                    .foregroundColor(theme.accentGreen)
+                    .scaleEffect(timer.showCelebration ? 1.0 : 0.1)
+                    .animation(.spring(response: 0.4, dampingFraction: 0.5), value: timer.showCelebration)
+
+                Text(timer.celebrationText)
+                    .font(.system(size: 28, weight: .bold, design: .monospaced))
+                    .foregroundColor(theme.text)
+
+                Text("Block \(timer.completedBlocks) of \(timer.blockGoal)")
+                    .font(.system(size: 14, design: .monospaced))
+                    .foregroundColor(theme.textSecondary)
+
+                // Progress bar
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(theme.fieldBg)
+                            .frame(height: 8)
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(theme.accentGreen)
+                            .frame(
+                                width: geo.size.width * CGFloat(timer.completedBlocks) / CGFloat(max(timer.blockGoal, 1)),
+                                height: 8
+                            )
+                            .animation(.spring(response: 0.5), value: timer.completedBlocks)
+                    }
+                }
+                .frame(height: 8)
+                .padding(.horizontal, 40)
+
+                Text("\(timer.completedBlocks * timer.blockDuration) min done today")
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundColor(theme.textMuted)
+
+                Spacer()
+
+                Button(action: { timer.dismissCelebration() }) {
+                    Text("Continue")
+                        .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(theme.accentGreen)
+                        .cornerRadius(12)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+            }
         }
-        .padding(24)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(theme.dropBg)
-                .shadow(color: .black.opacity(0.3), radius: 20)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(theme.accentGreen.opacity(0.3), lineWidth: 1)
-        )
-        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var footerText: String {

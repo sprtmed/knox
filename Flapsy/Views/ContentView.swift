@@ -92,15 +92,16 @@ struct VaultContainerView: View {
     private var topBar: some View {
         GeometryReader { geo in
             let compact = geo.size.width < 380
-                let full = geo.size.width >= 410
             HStack {
                 HStack(spacing: 8) {
                     Image(systemName: "lock.open.fill")
                         .font(.system(size: 14))
                         .foregroundColor(theme.text)
-                    Text(panelTitle)
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(theme.text)
+                    if vault.currentPanel != .list {
+                        Text(panelTitle)
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .foregroundColor(theme.text)
+                    }
                 }
                 Spacer()
                 HStack(spacing: 4) {
@@ -159,14 +160,8 @@ struct VaultContainerView: View {
                         .help(settings.isWindowPinned ? "Unpin window" : "Pin window")
 
                         Button(action: { vault.navigateToPanel(.addNew) }) {
-                            HStack(spacing: 4) {
-                                Text("+")
-                                    .font(.system(size: 11))
-                                if full {
-                                    Text("New")
-                                        .font(.system(size: 11, design: .monospaced))
-                                }
-                            }
+                            Text("+")
+                                .font(.system(size: 11))
                             .foregroundColor(theme.accentBlueLt)
                             .padding(.horizontal, compact ? 8 : 12)
                             .padding(.vertical, 5)
@@ -236,14 +231,8 @@ struct VaultContainerView: View {
                         .buttonStyle(.plain)
 
                         Button(action: { vault.lock() }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "lock.fill")
-                                    .font(.system(size: 10))
-                                if full {
-                                    Text("Lock")
-                                        .font(.system(size: 11, design: .monospaced))
-                                }
-                            }
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 10))
                             .foregroundColor(theme.accentRed)
                             .padding(.horizontal, compact ? 8 : 12)
                             .padding(.vertical, 5)
