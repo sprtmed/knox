@@ -16,6 +16,9 @@ class PomodoroTimer: ObservableObject {
     @Published var timeRemaining: Int = 25 * 60
     @Published var workSessionNumber: Int = 1
 
+    // Mode
+    @Published var showBlockMode: Bool = false
+
     // Block
     @Published var blockState: TimerState = .idle
     @Published var blockGoal: Int = 20
@@ -226,14 +229,11 @@ class PomodoroTimer: ObservableObject {
 struct PomodoroView: View {
     @Environment(\.theme) var theme
     @ObservedObject private var timer = PomodoroTimer.shared
-    @State private var showBlockMode = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                header
-
-                if showBlockMode {
+                if timer.showBlockMode {
                     BlockTimerView(timer: timer)
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
@@ -248,38 +248,8 @@ struct PomodoroView: View {
                 }
             }
             .padding(.horizontal, 16)
+            .padding(.top, 12)
         }
-    }
-
-    private var header: some View {
-        HStack {
-            HStack(spacing: 6) {
-                Image(systemName: "clock.fill")
-                    .font(.system(size: 12))
-                    .foregroundColor(theme.accentBlue)
-                Text("Pomodoro Timer")
-                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                    .foregroundColor(theme.text)
-            }
-            Spacer()
-            Button(action: {
-                timer.stopAll()
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showBlockMode.toggle()
-                }
-            }) {
-                Image(systemName: "arrow.2.squarepath")
-                    .font(.system(size: 13))
-                    .foregroundColor(theme.accentBlue)
-                    .padding(6)
-                    .background(theme.accentBlue.opacity(0.1))
-                    .cornerRadius(6)
-            }
-            .buttonStyle(.plain)
-            .help(showBlockMode ? "Switch to Classic Pomodoro" : "Switch to Block Mode")
-        }
-        .padding(.top, 16)
-        .padding(.bottom, 20)
     }
 }
 

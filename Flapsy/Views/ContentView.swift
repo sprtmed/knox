@@ -121,6 +121,26 @@ struct VaultContainerView: View {
                             .cornerRadius(6)
                         }
                         .buttonStyle(.plain)
+
+                        if vault.currentPanel == .pomodoro {
+                            Button(action: {
+                                let pt = PomodoroTimer.shared
+                                pt.stopAll()
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    pt.showBlockMode.toggle()
+                                }
+                            }) {
+                                Image(systemName: "arrow.2.squarepath")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(theme.accentBlue)
+                                    .padding(.horizontal, compact ? 8 : 12)
+                                    .padding(.vertical, 5)
+                                    .background(theme.accentBlue.opacity(0.08))
+                                    .cornerRadius(6)
+                            }
+                            .buttonStyle(.plain)
+                            .help(PomodoroTimer.shared.showBlockMode ? "Switch to Classic" : "Switch to Block Mode")
+                        }
                     } else {
                         Button(action: {
                             withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
